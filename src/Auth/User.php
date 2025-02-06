@@ -71,9 +71,11 @@ class User
 
     // Cerrar sesión
     public function logout() {
-        session_start();
-        session_unset();
-        session_destroy();
-        echo "Sesión cerrada.";
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_unset();
+            session_destroy();
+            header("../index.html");
+        }
+
     }
 }
