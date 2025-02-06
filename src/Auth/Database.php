@@ -2,9 +2,9 @@
 
 class Database
 {
-    private $host = "172.18.0.2";
+    private $host = "172.18.0.3";
     private $port = "5432";
-    private $dbname = "quiz_app";
+    private $dbname = "quizz_app";
     private $username = "naomi";
     private $password = "pestillo";
     private $conn;
