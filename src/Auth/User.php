@@ -31,7 +31,7 @@ class User
             ]);
 
             // Si todo va bien, redirigir
-            header("Location: ../index.html");
+            header("Location: ../index.php");
             exit();
         } catch (PDOException $e) {
             // Error de base de datos
@@ -71,11 +71,19 @@ class User
 
     // Cerrar sesión
     public function logout() {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_unset();
-            session_destroy();
-            header("../index.html");
+        // Start session only if not already started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
+        // Unset all session variables
+        $_SESSION = [];
+
+        // Destroy the session
+        session_destroy();
+
+        // Redirect and stop execution
+        header("Location: ../index.php");
+        exit;
     }
 }

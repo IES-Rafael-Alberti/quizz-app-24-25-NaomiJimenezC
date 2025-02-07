@@ -31,7 +31,7 @@ class UserRoutes
 
                     if ($result === true) {
                         // Login exitoso
-                        header("Location: ../index.html");
+                        header("Location: ../index.php");
                     } else {
                         // Error en el login
                         header("Location: ../login.php?error=" . urlencode($result));
@@ -46,6 +46,7 @@ class UserRoutes
 
             case 'logout':
                 $this->user->logout();
+                header("Location: ../index.php");
                 break;
 
             default:
