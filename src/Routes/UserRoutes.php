@@ -1,5 +1,5 @@
 <?php
-require_once '../Auth/User.php';
+require_once '../Models/User.php';
 
 class UserRoutes
 {

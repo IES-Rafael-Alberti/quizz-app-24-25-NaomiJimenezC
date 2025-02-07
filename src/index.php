@@ -13,6 +13,9 @@ session_start();
 <h1>Bienvenidos a QuizzApp</h1>
     <ul>
         <?php if (isset($_SESSION['user_id'])): ?>
+            <section>
+                <h2>Bienvenido/a <?php print_r($_SESSION['username'])?></h2>
+            </section>
             <form action="./Routes/UserRoutes.php" method="POST">
                 <input type="hidden" name="action" value="logout">
                 <button type="submit">Cerrar Sesión</button>
