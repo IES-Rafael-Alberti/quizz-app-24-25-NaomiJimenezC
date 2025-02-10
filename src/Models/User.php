@@ -13,6 +13,11 @@ class User
     // Registrar usuario con contraseña encriptada
     public function register($username, $password) {
         try {
+            // Verificar si los campos están vacíos
+            if (empty($username) || empty($password)) {
+                throw new Exception("El nombre de usuario o la contraseña no pueden estar vacíos.");
+            }
+
             // Verificar si el usuario ya existe
             $checkQuery = 'SELECT COUNT(*) FROM "Usuario" WHERE username = :username';
             $checkStmt = $this->conn->prepare($checkQuery);
@@ -22,23 +27,34 @@ class User
                 throw new Exception("El nombre de usuario ya existe.");
             }
 
+            // Generar hash de contraseña
             $password_hashed = password_hash($password, PASSWORD_DEFAULT);
-            $query = 'INSERT INTO "Usuario" (username, password) VALUES (:username, :password)';
+            error_log("Password hash generado: $password_hashed");
+
+            // Insertar nuevo usuario
+            $query = 'INSERT INTO "Usuario" (username, password, is_administrator) VALUES (:username, :password, :is_administrator)';
             $stmt = $this->conn->prepare($query);
+
+            // Depuración: Registrar intento
+            error_log("Intentando registrar: username=$username");
+
+            // Ejecutar la consulta
             $stmt->execute([
                 ':username' => $username,
-                ':password' => $password_hashed
+                ':password' => $password_hashed,
+                ':is_administrator' => 'f' // 'f' es equivalente a false en PostgreSQL
             ]);
 
-            // Si todo va bien, redirigir
+            // Redirigir al index.php después del registro exitoso
             header("Location: ../index.php");
             exit();
         } catch (PDOException $e) {
-            // Error de base de datos
+            // Manejo de errores de base de datos
             error_log("Error de base de datos: " . $e->getMessage());
             return "Error al registrar el usuario. Por favor, inténtelo de nuevo más tarde.";
         } catch (Exception $e) {
-            // Otros errores
+            // Manejo de otros errores
+            error_log("Error general: " . $e->getMessage());
             return $e->getMessage();
         }
     }
@@ -55,6 +71,7 @@ class User
                 session_start();
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['username'] = $user['username'];
+                $_SESSION['is_admin'] = $user['is_administrator'];
                 return true; // Login exitoso
             } else {
                 return "Credenciales incorrectas.";
