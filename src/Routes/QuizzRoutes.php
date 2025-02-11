@@ -21,7 +21,6 @@ class QuizzRoutes
                     $title = $_POST['title'] ?? '';
                     $description = $_POST['description'] ?? '';
                     $this->quizz->createQuiz($title, $description);
-                    echo json_encode(["message" => "Cuestionario creado exitosamente"]);
                 } else {
                     echo json_encode(["error" => "Método no permitido"]);
                 }

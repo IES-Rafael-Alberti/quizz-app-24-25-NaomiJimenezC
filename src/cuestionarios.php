@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'Models/Quizz.php'; // Incluye la clase Quizz
 
 // Instancia de la clase Quizz
@@ -29,7 +30,13 @@ $quizzes = $quizz->getAllQuizzes();
     </style>
 </head>
 <body>
+
 <h1>Lista de Cuestionarios</h1>
+<?php if ($_SESSION['is_admin'] == 1) { ?>
+    <a href="formQuizz.php">
+        <button>Crear cuestionario</button>
+    </a>
+<?php } ?>
 
 <?php if (!empty($quizzes)): ?>
     <!-- Tabla para mostrar los cuestionarios -->

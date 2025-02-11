@@ -1,6 +1,5 @@
 <?php
 session_start();
-print_r($_SESSION);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,24 +10,27 @@ print_r($_SESSION);
     <title>Inicio</title>
 </head>
 <body>
-<h1>Bienvenidos a QuizzApp</h1>
-    <ul>
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <section>
-                <h2>Bienvenido/a <?php print_r($_SESSION['username'])?></h2>
-                <p>Mire sus <a href="cuestionarios.php">cuestionarios</a></p>
-            </section>
+    <h1>Bienvenidos a QuizzApp</h1>
 
-            <form action="./Routes/UserRoutes.php" method="POST">
-                <input type="hidden" name="action" value="logout">
-                <button type="submit">Cerrar Sesión</button>
-            </form>
-        <?php else: ?>
-            <li>
-                <a href="login.php">Login</a>
-                <a href="register.html">Registro</a>
-            </li>
-        <?php endif; ?>
-    </ul>
-</body>
+    <div>
+        <ul>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <section>
+                    <h2>Bienvenido/a <?php print_r($_SESSION['username'])?></h2>
+                    <p>Mire sus <a href="cuestionarios.php">cuestionarios</a></p>
+                </section>
+
+                <form action="./Routes/UserRoutes.php" method="POST">
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit">Cerrar Sesión</button>
+                </form>
+            <?php else: ?>
+                <li>
+                    <a href="login.php">Login</a>
+                    <a href="register.html">Registro</a>
+                </li>
+            <?php endif; ?>
+        </ul>
+    </div>
+    </body>
 </html>
