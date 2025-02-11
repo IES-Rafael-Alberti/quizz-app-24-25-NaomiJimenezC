@@ -23,7 +23,7 @@ class Respuesta
             ':selected_option' => $selected_option,
             ':is_correct' => $is_correct
         ]);
-        echo "Respuesta guardada exitosamente.";
+
     }
 
     // Obtener todas las respuestas de un usuario para un cuestionario

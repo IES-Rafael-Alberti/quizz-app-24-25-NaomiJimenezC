@@ -19,7 +19,6 @@ class Quizz
             ':title' => $title,
             ':description' => $description
         ]);
-        echo "Cuestionario creado exitosamente.";
     }
 
     // Obtener todos los cuestionarios

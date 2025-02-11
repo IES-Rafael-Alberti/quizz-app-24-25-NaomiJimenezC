@@ -21,6 +21,8 @@ class QuizzRoutes
                     $title = $_POST['title'] ?? '';
                     $description = $_POST['description'] ?? '';
                     $this->quizz->createQuiz($title, $description);
+                    header('Location: ../cuestionarios.php');
+
                 } else {
                     echo json_encode(["error" => "Método no permitido"]);
                 }
@@ -116,19 +118,14 @@ class QuizzRoutes
                             break;
                         }
 
-                        // Verificar si la respuesta seleccionada es correcta
-                        $is_correct = strtolower($question['correct_option']) == $selected_option;
-//                        var_dump($selected_option);
-//                        var_dump(strtolower($question['correct_option']));
-//                        var_dump(strtolower($question['correct_option']) == $selected_option);
-                        var_dump($is_correct);
+                        $is_correct = strtolower($question['correct_option']) == strtolower($selected_option);
 
-                        //$is_correct = ($selected_option == strtolower($question['correct_option']));
+                        // Asegurar que $is_correct se guarde como 1 o 0 en la BD
+                        $is_correct = $is_correct ? 1 : 0;
 
                         // Guardar la respuesta en la base de datos
                         try {
                             $this->respuesta->saveResponse($user_id, $quiz_id, $question_id, $selected_option, $is_correct);
-                            // Almacenar el resultado para mostrarlo o procesarlo más adelante
                             $results[] = [
                                 'question_id' => $question_id,
                                 'selected_option' => $selected_option,
@@ -142,12 +139,12 @@ class QuizzRoutes
                     }
 
                     if (!headers_sent()) {
-                        //echo json_encode($results);
+                        header("Location: ../cuestionarios.php");
                         exit;
                     } else {
                         echo json_encode([
-//                            "message" => "Respuestas procesadas exitosamente",
-//                            "results" => $results
+                            "message" => "Respuestas procesadas exitosamente",
+                            "results" => $results
                         ]);
                     }
                 } else {
