@@ -78,7 +78,6 @@ class Quizz
             ':option_d' => $option_d,
             ':correct_option' => $correct_option
         ]);
-        echo "Pregunta añadida exitosamente.";
     }
 
     // Obtener una pregunta por ID

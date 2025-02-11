@@ -79,11 +79,12 @@ class QuizzRoutes
                     $option_d = $_POST['option_d'] ?? '';
                     $correct_option = $_POST['correct_option'] ?? '';
                     $this->quizz->addQuestion($quiz_id, $question_text, $option_a, $option_b, $option_c, $option_d, $correct_option);
-                    echo json_encode(["message" => "Pregunta añadida exitosamente"]);
-                } else {
+                    header("Location: ../cuestionario?quiz_id=$quiz_id.php");
+    } else {
                     echo json_encode(["error" => "Método no permitido"]);
                 }
                 break;
+
 
             case 'get_questions':
                 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
