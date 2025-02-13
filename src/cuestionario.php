@@ -1,8 +1,10 @@
 <?php
 require_once './Models/Quizz.php';
+require_once './Models/Respuesta.php';
 session_start();
 
 $quizz = new Quizz();
+$respuesta = new Respuesta(); // Crear una instancia de Respuesta
 
 $quiz_id = $_GET['quiz_id'] ?? null;
 if (!$quiz_id) {
@@ -20,7 +22,9 @@ if (!$user_id) {
     die("Error: Usuario no autenticado.");
 }
 
-// Procesar respuestas cuando el formulario es enviado
+// Obtener estadísticas del cuestionario y usuario llamando correctamente al método desde la clase Respuesta
+$quiz_statistics = $respuesta->getQuizStatistics($quiz_id, $user_id);
+
 $results = [];
 $correct_count = 0;
 $total_questions = count($questions);
@@ -43,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['answers'])) {
         ];
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -64,7 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['answers'])) {
 <?php } ?>
 
 <?php if ($questions && count($questions) > 0): ?>
-    <form action="" method="post" id="quiz-form">
+    <form action="./Routes/QuizzRoutes.php" method="post" id="quiz-form">
+        <input type="hidden" name="action" value="submit_answers">
         <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
         <input type="hidden" name="quiz_id" value="<?php echo $quiz_id; ?>">
 
@@ -88,26 +92,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['answers'])) {
         <button type="submit" id="submit-button">Enviar respuestas</button>
     </form>
 
-    <?php if (!empty($results)): ?>
-        <h2>Resumen de respuestas</h2>
-        <p><strong>Has acertado <?php echo $correct_count; ?> de <?php echo $total_questions; ?></strong></p>
-        <ul>
-            <?php foreach ($results as $result): ?>
-                <li>
-                    <strong><?php echo htmlspecialchars($result['question']); ?></strong><br>
-                    Tu respuesta:
-                    <span style="color: <?php echo $result['is_correct'] ? 'green' : 'red'; ?>">
-                            <?php echo htmlspecialchars($result['user_answer'] ?? 'No respondida'); ?>
-                        </span><br>
-                    Respuesta correcta: <strong><?php echo htmlspecialchars($result['correct_answer']); ?></strong>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
+    <div id="results-container"></div> <!-- Contenedor para los resultados -->
 
 <?php else: ?>
     <p>No hay preguntas disponibles para este cuestionario.</p>
 <?php endif; ?>
+
+<script>
+    // Esperar a que el documento esté completamente cargado
+    document.addEventListener('DOMContentLoaded', function() {
+        const quizForm = document.getElementById('quiz-form'); // Formulario del cuestionario
+        const resultsContainer = document.getElementById('results-container'); // Contenedor de resultados
+
+        // Cuando se envíe el formulario
+        quizForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevenir el envío normal del formulario
+
+            const formData = new FormData(quizForm); // Recoger todos los datos del formulario
+
+            // Usar la API fetch para enviar la solicitud con los datos
+            fetch('./Routes/QuizzRoutes.php', {
+                method: 'POST',
+                body: formData // Enviar los datos del formulario
+            })
+                .then(response => response.json()) // Esperar la respuesta JSON
+                .then(data => {
+                    if (data.error) {
+                        // Si hay un error, mostrarlo
+                        resultsContainer.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                    } else {
+                        // Si no hay error, mostrar el resumen y las estadísticas
+                        let resultHtml = `<h2>Resumen de respuestas</h2>`;
+                        resultHtml += `<p><strong>Has acertado ${data.correct_count} de ${data.total_questions}</strong></p>`;
+
+                        // Mostrar estadísticas adicionales del cuestionario
+                        if (data.quiz_statistics) {
+                            resultHtml += `<p><strong>Puntuación media del cuestionario: ${data.quiz_statistics.average_score}%</strong></p>`;
+                            if (data.quiz_statistics.total_attempts !== undefined) {
+                                resultHtml += `<p><strong>Intentos totales: ${data.quiz_statistics.total_attempts}</strong></p>`;
+                            } else {
+                                resultHtml += `<p><strong>No hay intentos registrados aún.</strong></p>`;
+                            }
+                        }
+
+                        // Mostrar las respuestas del cuestionario con color (verde para correctas, rojo para incorrectas)
+                        resultHtml += `<ul>`;
+                        data.results.forEach(result => {
+                            resultHtml += `<li>
+                        <strong>${result.question}</strong><br>
+                        Tu respuesta: <span style="color: ${result.is_correct ? 'green' : 'red'};">${result.user_answer ?? 'No respondida'}</span><br>
+                        Respuesta correcta: <strong>${result.correct_answer}</strong>
+                    </li>`;
+                        });
+                        resultHtml += `</ul>`;
+
+                        // Insertar los resultados en el contenedor
+                        resultsContainer.innerHTML = resultHtml;
+                    }
+                })
+                .catch(error => {
+                    // En caso de que ocurra un error durante la solicitud AJAX
+                    resultsContainer.innerHTML = `<p style="color: red;">Error al procesar la solicitud: ${error.message}</p>`;
+                });
+        });
+    });
+</script>
 
 </body>
 </html>

@@ -95,6 +95,7 @@ class QuizzRoutes
                     echo json_encode(["error" => "Método no permitido"]);
                 }
                 break;
+
             case 'submit_answers':
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $user_id = $_POST['user_id'] ?? '';
@@ -104,11 +105,12 @@ class QuizzRoutes
                     // Validar que los datos necesarios estén presentes
                     if (empty($user_id) || empty($quiz_id) || empty($answers)) {
                         echo json_encode(["error" => "Datos incompletos: user_id, quiz_id o answers faltan"]);
-                        break;
+                        exit;
                     }
 
                     // Inicializar un array para almacenar los resultados
                     $results = [];
+                    $correct_count = 0;
 
                     foreach ($answers as $question_id => $selected_option) {
                         // Obtener los datos de la pregunta
@@ -116,7 +118,7 @@ class QuizzRoutes
 
                         if (!$question) {
                             echo json_encode(["error" => "Pregunta no encontrada: $question_id"]);
-                            break;
+                            exit;
                         }
 
                         $is_correct = strtolower($question['correct_option']) == strtolower($selected_option);
@@ -127,32 +129,41 @@ class QuizzRoutes
                         // Guardar la respuesta en la base de datos
                         try {
                             $this->respuesta->saveResponse($user_id, $quiz_id, $question_id, $selected_option, $is_correct);
+                            if ($is_correct) {
+                                $correct_count++;
+                            }
                             $results[] = [
-                                'question_id' => $question_id,
-                                'selected_option' => $selected_option,
+                                'question' => $question['question_text'],
+                                'user_answer' => $selected_option,
                                 'is_correct' => $is_correct,
-                                'correct_option' => $question['correct_option']
+                                'correct_answer' => $question['correct_option']
                             ];
                         } catch (Exception $e) {
                             echo json_encode(["error" => "Error al guardar respuesta: " . $e->getMessage()]);
-                            break;
+                            exit;
                         }
                     }
 
-                    if (!headers_sent()) {
-                        header("Location: ../cuestionarios.php");
-                        exit;
-                    } else {
-                        echo json_encode([
-                            "message" => "Respuestas procesadas exitosamente",
-                            "results" => $results
-                        ]);
+                    // Calcular estadísticas del cuestionario
+                    $quiz_statistics = $this->respuesta->getQuizStatistics($quiz_id, $user_id);
+
+                    if (isset($quiz_statistics['average_score'])) {
+                        $quiz_statistics['average_score'] = round($quiz_statistics['average_score'], 2);
                     }
+
+                    // Devolver los resultados y estadísticas como respuesta JSON
+                    echo json_encode([
+                        "message" => "Respuestas procesadas exitosamente",
+                        "correct_count" => $correct_count,
+                        "total_questions" => count($answers),
+                        "results" => $results,
+                        "quiz_statistics" => $quiz_statistics
+                    ]);
+                    exit;
                 } else {
                     echo json_encode(["error" => "Método no permitido"]);
+                    exit;
                 }
-                break;
-
             default:
                 echo json_encode(["error" => "Acción no válida"]);
                 break;

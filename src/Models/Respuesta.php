@@ -69,15 +69,25 @@ class Respuesta
     }
 
     // Obtener estadísticas de un cuestionario (respuestas correctas e incorrectas)
-    public function getQuizStatistics($quiz_id) {
+    public function getQuizStatistics($quiz_id, $user_id) {
         $query = 'SELECT 
-                    COUNT(*) AS total_responses,
-                    SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) AS correct_responses,
-                    SUM(CASE WHEN NOT is_correct THEN 1 ELSE 0 END) AS incorrect_responses
-                  FROM "Respuestas"
-                  WHERE quiz_id = :quiz_id';
+                COUNT(*) AS total_responses,
+                SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) AS correct_responses,
+                SUM(CASE WHEN NOT is_correct THEN 1 ELSE 0 END) AS incorrect_responses,
+                -- Calcular la puntuación media (respuestas correctas / total de respuestas) * 100
+                CASE 
+                    WHEN COUNT(*) = 0 THEN 0
+                    ELSE (SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) * 100.0) / COUNT(*)
+                END AS average_score
+              FROM "Respuestas"
+              WHERE quiz_id = :quiz_id AND user_id = :user_id';
+
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([':quiz_id' => $quiz_id]);
+
+        // Ejecutar la consulta con ambos parámetros
+        $stmt->execute([':quiz_id' => $quiz_id, ':user_id' => $user_id]);
+
         return $stmt->fetch();
     }
+
 }
