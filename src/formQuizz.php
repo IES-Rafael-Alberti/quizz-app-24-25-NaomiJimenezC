@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Cuestionario</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        form { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
-        input, textarea, button { width: 100%; margin-top: 10px; padding: 10px; }
-    </style>
+
 </head>
 <body>
 <h2>Crear Cuestionario</h2>
